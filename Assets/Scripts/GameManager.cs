@@ -21,7 +21,7 @@ public class GameManager : MonoBehaviour
         {
 
         }
-        // if he has taken his action then he can move his units as he wishes
+        // if he has taken his action then he can move his units as he wishes 
         else
         {
 
