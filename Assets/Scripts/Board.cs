@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+
 public class Board : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -11,9 +13,12 @@ public class Board : MonoBehaviour
     public Sprite[] sprites;
     [Header("Templates")]
     public GameObject textTamplate;
+    [HideInInspector]
+    public bool select = false;
+    GameObject highlight;
+    public GameObject highlightPrefab;
     void Start()
     {
-
         createdRepresentions = new List<GameObject>();
         grid = new Grid(6, 9);
         grid.SetUnit(1, 2, new Unit(FindObjectOfType<PropertiesManager>().GetUnitProperties("Thug"), 1));
@@ -21,7 +26,7 @@ public class Board : MonoBehaviour
     }
     public void InstantiateBoard()
     {
-        int bias = 3;
+        int bias = 0;
         for (int i = 0; i < grid.width; i++)
         {
             for (int j = 0; j < grid.height; j++)
@@ -57,7 +62,42 @@ public class Board : MonoBehaviour
         }
     }
 
+    public void DrawSquareHightlight(Vector2Int currentSquare)
+    {
+        Destroy(highlight);
+        highlight = Instantiate(highlightPrefab);
+        highlight.transform.position = new Vector2(currentSquare.x * modifier, currentSquare.y * modifier);
+    }
 
+    public bool HasUnit(int x, int y)
+    {
+        return !(grid.GetUnit(x, y) is null);
+    }
+
+
+    public void Refresh(int owner)
+    {
+        foreach (Unit unit in grid.units)
+        {
+            if (unit?.owner == owner)
+            {
+                unit.RefreshMovement();
+                RefreshMovementRepresantation(unit);
+            }
+
+        }
+    }
+    
+        
+
+    public void AddUnit(int x, int y, UnitProperties unitProperties, int owner)
+    {
+        if (grid.GetUnit(x, y) == null) {
+            grid.SetUnit(x, y, new Unit(unitProperties, owner));
+            DrawUnit(x, y);
+        }
+
+    }
 
     // draws a unit at a spesific x and y
     public void DrawUnit(int x, int y)
@@ -72,7 +112,8 @@ public class Board : MonoBehaviour
         unitSprite.sortingOrder = 3;
 
         GameObject unitCanvas = new GameObject("canvas");
-        GameObject text = GameObject.Instantiate(textTamplate);
+        GameObject ownerText = GameObject.Instantiate(textTamplate);
+        GameObject unitNameText = GameObject.Instantiate(textTamplate);
         //// later Will be for health bar.
         //GameObject healthBarObj = GameObject.Instantiate(healthBar);
         //healthBarObj.GetComponent<HealthBar>().SetMaxHealth(unitPresent.Maxhealth);
@@ -86,7 +127,8 @@ public class Board : MonoBehaviour
         //    healthBarObj.GetComponent<Slider>().fillRect.GetComponent<Image>().color = Object.FindObjectOfType<GameManager>().playerColors[unitPresent.owner];
         //}
 
-        text.transform.SetParent(unitCanvas.transform);
+        ownerText.transform.SetParent(unitCanvas.transform);
+        unitNameText.transform.SetParent(unitCanvas.transform);
         //healthBarObj.transform.SetParent(unitCanvas.transform);
         unitCanvas.transform.SetParent(unit.transform);
 
@@ -97,15 +139,30 @@ public class Board : MonoBehaviour
         unitCanvas.transform.localPosition = new Vector3(0, 0, 0);
         unitCanvas.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
 
-        text.transform.localPosition = new Vector3(0, 0, 0);
-        text.GetComponent<RectTransform>().sizeDelta = new Vector2(32, 32);
-        text.GetComponent<Text>().text = unitPresent.owner.ToString();
+        ownerText.transform.localPosition = new Vector3(0, 0, 0);
+        ownerText.GetComponent<RectTransform>().sizeDelta = new Vector2(32, 32);
+        ownerText.GetComponent<Text>().text = unitPresent.owner.ToString();
+
+
+        unitNameText.transform.localPosition = new Vector3(0, 0, 0);
+        unitNameText.GetComponent<RectTransform>().sizeDelta = new Vector2(32, 32);
+        unitNameText.GetComponent<Text>().text = unitPresent.unitProperties.name.ToString();
+        unitNameText.GetComponent<Text>().fontSize = 10;
+        unitNameText.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+
+        
+
+
 
         //healthBarObj.transform.localPosition = new Vector3(0, 15f, 0);
         //healthBarObj.transform.localScale = new Vector3(0.16f, 0.04f, 0.04f);
     }
 
-
+    public void RefreshMovementRepresantation(Unit unit)
+    {
+        unit.representation.LeanColor(Color.white, 0.2f);
+    }
+    
     private void MoveRepresantation(Unit unit)
     {
         //Object.FindObjectOfType<AudioManager>().Play("Move");
@@ -124,4 +181,21 @@ public class Board : MonoBehaviour
         unit.representation.transform.LeanMove(new Vector2(unit.x * modifier, unit.y * modifier), 0.1f).setEaseInOutCirc();
     }
 
+    public Vector2Int GetCurrentMouseSquare()
+    {
+ 
+    
+        Vector3 pos = Utils.GetMousePosition();
+        int x, y;
+        x = Mathf.FloorToInt((pos.x / 3) + 0.5f);
+        y = Mathf.FloorToInt(pos.y / 3 + 0.5f);
+        select = false;
+        //Debug.Log(x + " " + y);
+        if (x < 0 || y < 0 || x >= 6 || y >= 9)
+        {
+            return new Vector2Int(-1, -1);
+        }
+
+        return new Vector2Int(x, y);
+    }
 }

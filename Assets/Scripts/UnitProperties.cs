@@ -13,6 +13,7 @@ public class UnitProperties : ScriptableObject
     public int attack;
     public int range = 1;
     public int defence;
+    public int carryCapacity = 0;
 }
 
 

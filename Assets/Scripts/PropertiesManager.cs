@@ -6,6 +6,8 @@ using System;
 public class PropertiesManager : MonoBehaviour
 {
     public UnitProperties[] UnitProperties;
+    public Card[] Cards;
+    
 
     public UnitProperties GetUnitProperties(string name)
     {
@@ -15,5 +17,9 @@ public class PropertiesManager : MonoBehaviour
         }
         return s;
     }
-    
+
+    public List<Card> GetCards(string[] cardNames)
+    {
+        return new List<Card>();
+    }
 }

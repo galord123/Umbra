@@ -10,7 +10,7 @@ public class Grid
     private Tiles.tiles[,] mapGrid;
     private Unit[,] unitGrid;
     private Structure[,] structureGrid;
-
+    public List<Unit> units = new List<Unit>();
 
     public Grid(int x, int y)
     {
@@ -20,8 +20,14 @@ public class Grid
         structureGrid = new Structure[x, y];
         width = x;
         height = y;
-        GenerateRandomTerrain();
-
+        //GenerateRandomTerrain();
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                mapGrid[i, j] = Tiles.tiles.plains;
+            }
+        }
     }
 
 
@@ -105,11 +111,12 @@ public class Grid
 
         if (unit == null)
         {
-            //if (unitGrid[x, y] != null)
-            //{
-            //    Object.DestroyImmediate(unitGrid[x, y].representation);
-            //    unitGrid[x, y].representation = null;
-            //}
+            if (unitGrid[x, y] != null)
+            {
+                //Object.DestroyImmediate(unitGrid[x, y].representation);
+                //unitGrid[x, y].representation = null;
+                units.Remove(unitGrid[x, y]);
+            }
             unitGrid[x, y] = null;
             return;
         }
@@ -117,8 +124,7 @@ public class Grid
         unit.x = x;
         unit.y = y;
         unitGrid[x, y] = unit;
-
-        
+        units.Add(unit);
     }
 
 
